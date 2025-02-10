@@ -48,6 +48,3 @@ The `main.py` script simulates the cache using different trace files and cache c
 
 2. Open a terminal in Visual Studio Code or use the command prompt.
 
-3. Navigate to the project directory:
-   ```sh
-   cd "c:/Users/nater/OneDrive/Desktop/comp sci/CS 429/cs429-project1"
