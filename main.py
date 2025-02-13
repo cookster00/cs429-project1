@@ -1,4 +1,4 @@
-from cache import WriteThroughCache
+from cache import WriteThroughCache, WriteBackCache
 
 def read_trace_file(file_path):
     with open(file_path, 'r') as file:
@@ -6,7 +6,7 @@ def read_trace_file(file_path):
             access_type, address = line.split()
             yield int(access_type), int(address, 16)
 
-def simulate_cache(trace_file, associativity):
+def simulate_cache(trace_file, associativity, cache_type):
     # Cache configuration
     total_size = 1024  # Total cache size in bytes
     block_size = 32    # Block size in bytes
@@ -14,8 +14,8 @@ def simulate_cache(trace_file, associativity):
     miss_penalty = 100 # Miss penalty in cycles
 
     # Initialize the caches
-    instruction_cache = WriteThroughCache(total_size, block_size, associativity)
-    data_cache = WriteThroughCache(total_size, block_size, associativity)
+    instruction_cache = cache_type(total_size, block_size, associativity)
+    data_cache = cache_type(total_size, block_size, associativity)
 
     instruction_hits, instruction_misses = 0, 0
     data_hits, data_misses = 0, 0
@@ -50,9 +50,16 @@ def main():
     associativities = [1, 2, 4, 8, 16, 32]
 
     for trace_file in trace_files:
-        print(f"Processing {trace_file}...")
+        print(f"Processing {trace_file} with Write-Through Cache...")
         for associativity in associativities:
-            (instruction_hits, instruction_misses, instruction_amat), (data_hits, data_misses, data_amat) = simulate_cache(trace_file, associativity)
+            (instruction_hits, instruction_misses, instruction_amat), (data_hits, data_misses, data_amat) = simulate_cache(trace_file, associativity, WriteThroughCache)
+            print(f"Associativity: {associativity}")
+            print(f"  Instruction Cache - Hits: {instruction_hits}, Misses: {instruction_misses}, AMAT: {instruction_amat:.2f} cycles")
+            print(f"  Data Cache - Hits: {data_hits}, Misses: {data_misses}, AMAT: {data_amat:.2f} cycles")
+
+        print(f"Processing {trace_file} with Write-Back Cache...")
+        for associativity in associativities:
+            (instruction_hits, instruction_misses, instruction_amat), (data_hits, data_misses, data_amat) = simulate_cache(trace_file, associativity, WriteBackCache)
             print(f"Associativity: {associativity}")
             print(f"  Instruction Cache - Hits: {instruction_hits}, Misses: {instruction_misses}, AMAT: {instruction_amat:.2f} cycles")
             print(f"  Data Cache - Hits: {data_hits}, Misses: {data_misses}, AMAT: {data_amat:.2f} cycles")
