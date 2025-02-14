@@ -64,6 +64,8 @@ class WriteBackCache(Cache):
         set_index, tag = self._get_set_index_and_tag(address)
         cache_set = self.cache[set_index]
 
+        memory_write = False
+
         # Check for hit
         for block in cache_set:
             if block['valid'] and block['tag'] == tag:
@@ -71,13 +73,13 @@ class WriteBackCache(Cache):
                     block['dirty'] = True
                 block['lru'] = self.lru_counter
                 self.lru_counter += 1
-                return True  # Cache hit
+                return True, memory_write  # Cache hit
 
         # Cache miss
         # Find LRU block to replace
         lru_block = min(cache_set, key=lambda block: block['lru'])
         if lru_block['valid'] and lru_block['dirty']:
-            self._write_to_memory(lru_block['tag'])  # Write back to memory if dirty
+            memory_write = True
 
         lru_block['valid'] = True
         lru_block['tag'] = tag
@@ -85,7 +87,7 @@ class WriteBackCache(Cache):
         lru_block['lru'] = self.lru_counter
         lru_block['dirty'] = (access_type == 1)  # Set dirty bit if it's a write access
         self.lru_counter += 1
-        return False  # Cache miss
+        return False, memory_write # Cache miss
 
     def _write_to_memory(self, address):
         # Simulate writing to main memory
